@@ -3,6 +3,8 @@
 This sketch is the center of the Odyschrift project, when used with a digital joystick. It has been originally created by Alle v Meeteren and crazy modified and updated by Jurre Ongering on 
 untill 20 March 2020.
 
+used is an Arduino mega2560
+
  * The joystick can sense activation on a single contact (allowing 4 directions)  or 2 contacts (allowing for 4 directions between the other 4 directions) at a time.
  * In the neutral state none of these is active. In our implementation the joystick has to return to that neutral state, before the next direction can be chosen.
  * We alternate between the 2 groups, so there is a variable to indicate which group is the active group. 
@@ -11,16 +13,16 @@ The project also includes the LiquidCrystal Library Library originally added 18 
 example added 9 Jul 2009 by Tom Igoe // modified 22 Nov 2010 by Tom Igoe // modified 7 Nov 2016 by Arturo Guadalupi/ More info:
 http://www.arduino.cc/en/Tutorial/LiquidCrystalHelloWorld 
  */
-#include <LiquidCrystal_I2C.h> // include the library code
+#include <LiquidCrystal_I2C.h> 	// include the library code
 //code is in in bibliotheken geplaats. Dit om het overzicht te behouden.
-#include <Ody_lezen.h>// the library voor lezen via bluetooth
-//#include <Ody_algemeen.h> //the library for special tools 
-#include <OdyModule.h> //the library for special tools 
+#include <Ody_lezen.h>		// the library voor lezen via bluetooth
+//#include <Ody_algemeen.h> 	//the library for special tools 
+#include <OdyModule.h> 		//the library for special tools 
 // initialize the LiquidCrystal library by associating any needed LCD interface pin
 // with the arduino pin number it is connected to
-const byte lcdAddr = 0x27;  // Address of I2C backpack
-const byte lcdCols = 20;    // Number of character in a row
-const byte lcdRows = 4;     // Number of lines
+const byte lcdAddr = 0x27;  	// Address of I2C backpack
+const byte lcdCols = 20;    	// Number of character in a row
+const byte lcdRows = 4;    	 // Number of lines
 const unsigned int scrollDelay = 500;   // Miliseconds before scrolling next char
 const unsigned int demoDelay = 2000;    // Miliseconds between demo loops
 LiquidCrystal_I2C lcd (0x27, 20, 4);
@@ -28,12 +30,12 @@ LiquidCrystal_I2C lcd (0x27, 20, 4);
 OdyModule odyMod();
 //variabelen om het lcd scherm te reguleren
 String tekst;			//catches the text to print to the lcd-screen
-byte textLen;                           // Number of visible characters in the text
+byte textLen;                   // Number of visible characters in the text
 int cursorKolom;		//waar op de regel start de tekst
 int cursorRij;			//op welke regel start de tekst
 int wachten;  			//als 1 neerzetten tekst in eerste loop, wordt 2 in de eerste loop. Als 3 wordt de tekst in elke loop aangepast. 
-int wachten2 = false;  			//schakelaar om te zetten in eerste loop. 
-int keuzestand = 0;			//zet een listener aan na de eerste loop in een keuze stand
+int wachten2 = false;		//schakelaar om te zetten in eerste loop. 
+int keuzestand = 0;		//zet een listener aan na de eerste loop in een keuze stand
 boolean startModus;		//waar zolang een welkomst tekst wordt getoond
 // NEVER define any of these pins to attach to the 1 (tx) pin on Arduino because it will totally screw your sketch!! And send you on an hour of debugging
 // Make sure these are corrected in the right order! Taking some time to do it properly might save you a lot of work later.
@@ -43,17 +45,17 @@ int dirRight = 49; // E
 int dirUp = 53; // O
 int dirDown = 51; //I
 
-int led_red = 12;                   //rood
-int led_green = 13;           //groen
+int led_red = 12;               //rood
+int led_green = 13;           	//groen
 
-boolean Firstgroup = true;    // This Boolean is used for zooming in on the group DRMF, or the group AOEI
-String Odywoord;              // This is the Odywoord which is a composition of one or more Odytekens
-int OdyNummer;              // This is the number of the Odywoord
-String Odyteken;                    // This is the Odyteken which constructs the Odywoord as selected at first
-String OdytekenNOW;                 // This is the Odyteken which is currently selected
-int cursorOdy;		//waar op de regel start de tekst
+boolean Firstgroup = true;    	// This Boolean is used for zooming in on the group DRMF, or the group AOEI
+String Odywoord;              	// This is the Odywoord which is a composition of one or more Odytekens
+int OdyNummer;             	// This is the number of the Odywoord
+String Odyteken;                // This is the Odyteken which constructs the Odywoord as selected at first
+String OdytekenNOW;             // This is the Odyteken which is currently selected
+int cursorOdy;			//waar op de regel start de tekst
 String strModule;		//variable to contain the name of the active application
-int intModule = 1;			//variable containing the number of a module
+int intModule = 1;		//variable containing the number of a module
 Ody_lezen myOdy(9,10);
 
 //de module waarin de joystick start
@@ -75,28 +77,28 @@ String strActie = "instelling_1";*/
 String strActie = "schakel";*/
 /*int odyModule = 2;			//variable containing the number of a module
 String strActie = "schrijven  ";*/
-int odyModule = 1;			//variable containing the number of a module
+int odyModule = 1;		//variable containing the number of a module
 String strActie = "4 op 1 ry";
 int cursorTekst = 0;	
 //uitzoeken functie/verschil 4 variabelen Jurre hieronder
-boolean laatstaan;                  //waar als de tekst niet wordt weggepoetst na de pauze
-boolean afrollen;                   // waar als de tekst afgerold moet worden
+boolean laatstaan;              //waar als de tekst niet wordt weggepoetst na de pauze
+boolean afrollen;               // waar als de tekst afgerold moet worden
 boolean FirstLetterDefined = false; // Variable distinguishing between first loop when looking for a first word, or second loop looking for second word
 //en variabelen Alle
-//int wachten;  			//als 1 neerzetten tekst in eerste loop, wordt 2 in de eerste loop. Als 3 wordt de tekst in elke loop aangepast. 
-int delayTime1 = 50; // Delay between shifts
-int delayTime2 = 250; // Delay between shifts
+//int wachten;  		//als 1 neerzetten tekst in eerste loop, wordt 2 in de eerste loop. Als 3 wordt de tekst in elke loop aangepast. 
+int delayTime1 = 50; 		// Delay between shifts
+int delayTime2 = 250; 		// Delay between shifts
 //einde variabelen Alle
-int eerste_schrijf_loop = false;  			//schakelaar om te zetten in eerste loop. 
+int eerste_schrijf_loop = false;//schakelaar om te zetten in eerste loop. 
 //variabelen om de input te timen
-int holdtime = 500;          // This sets how long the user have to hold the stick in a direction before selection is confirmed
-int startholdtime;            // This is a variable needed for keeping track of selection time
-int endholdtime;              // This is a variable needed for keeping track of selection time
-int pausetime = 100;         // Sets the time sketch pauzes after confirmation of letters
-int turntime = 500;           // Wait for a moment after selecting a motor 
-int readtime = 3000;                // Sets the time the info will be on the screen for Elinde's written messages
-int count = 10;                     // Sets the time the info will be on the screen for Elinde's written messages
-int announcetime = 1000;            // Time anouncing fal chip action
+int holdtime = 500;          	// This sets how long the user have to hold the stick in a direction before selection is confirmed
+int startholdtime;            	// This is a variable needed for keeping track of selection time
+int endholdtime;              	// This is a variable needed for keeping track of selection time
+int pausetime = 100;         	// Sets the time sketch pauzes after confirmation of letters
+int turntime = 500;           	// Wait for a moment after selecting a motor 
+int readtime = 3000;            // Sets the time the info will be on the screen for Elinde's written messages
+int count = 10;                 // Sets the time the info will be on the screen for Elinde's written messages
+int announcetime = 1000;        // Time anouncing fal chip action
 boolean wacht_op_input = false; //een pauze waarin gewacht wordt op input
 //---------------------------------------------------------------------------
 
@@ -139,7 +141,7 @@ Serial.println (odyMod.intM);
 Serial.println (odyMod.intM);
 Serial.println (odyMod.intM);
 Serial.println (odyMod.intM);
-digitalWrite(led_green, LOW); //switch green LED to low
+digitalWrite(led_green, LOW); 	//switch green LED to low
 	digitalWrite(led_red, LOW); //switch red LED to low
 	delay(100); // This tiny delay is nice to not flicker the LCD that will otherwise get a LOT of input from the final "else" statements.
   	lcd.setCursor(0,0);
