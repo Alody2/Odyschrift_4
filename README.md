@@ -1,7 +1,10 @@
 # Odyschrift_4
 human computer interaction based on four basic signals 
 
-Odyschrift is a method to interact with an apparatus by movements on a two-dimensional surface. On this github page we collect the Arduino sketches we are developing.
+Odyschrift is a method to interact with a computer by using only four input channels. 
+
+On this github page we collect the Arduino sketches we are developing.
+
 The central file is Odyschrift.ino.  
 
 Momentary we are developing 'Vier op een rij'. 
