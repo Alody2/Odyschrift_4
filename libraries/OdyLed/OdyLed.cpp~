@@ -1,0 +1,262 @@
+ 
+/* 
+This library is the center of the Ody project.  Ody is an input method. It uses 4 different impulses, in two flavours. It has been originally created by Alle v Meeteren and Jurre Ongering on spring 2020. 
+
+ * The first implementation is a joystick which can can sense activation on a single contact (allowing 4 directions)  or 2 contacts (allowing for 4 directions between the other 4 directions) at a time.
+ * In the neutral state none of these is active. In our implementation the joystick has to return to that neutral state, before the next direction can be chosen.
+ * We alternate between the 2 groups, so there is a variable to indicate which group is the active group. 
+
+ */
+
+#include "Arduino.h"
+#include "FastLED.h"
+#include "OdyLed.h"
+OdyLed::OdyLed(int dirLeft, int dirRight, int dirUp, int dirDown)
+{	
+  	pinMode( dirUp , INPUT);
+ 	pinMode( dirRight , INPUT);
+  	pinMode( dirDown , INPUT);
+  	pinMode( dirLeft , INPUT);
+	firstLetterDefined = false; 
+	_overgang = false;
+	_dirLeft = dirLeft; // A
+	_dirRight = dirRight; // E
+	_dirUp = dirUp; // O
+	_dirDown = dirDown; //I
+}
+String OdyLed::selectieJoystickDigitaal(int _aantalTekens)
+{
+String _Odywoord;
+	while (_aantalTekens > 0)
+	{
+		if (firstLetterDefined == false)
+		{
+	    		if ( digitalRead( _dirUp ) == LOW && digitalRead( _dirRight ) == LOW &&	 digitalRead( _dirDown ) == HIGH && digitalRead( _dirLeft) == HIGH )
+	    		{
+				if (_overgang == false)
+				{
+			    		_Odywoord = _wisselgroep ('D');
+					_overgang = true; 
+					_aantalTekens = _aantalTekens - 1;
+				}
+	    		}       
+	    		else if ( digitalRead( _dirUp ) == LOW && digitalRead( _dirRight ) == HIGH &&	 digitalRead( _dirDown ) == HIGH && digitalRead( _dirLeft) == LOW )
+	    		{
+				if (_overgang == false)
+				{
+	    				_Odywoord = _wisselgroep ('R');
+					_overgang = true; 
+					_aantalTekens = _aantalTekens - 1;
+				}
+	    		}	
+	    		else if ( digitalRead( _dirUp ) == HIGH && digitalRead( _dirRight ) == HIGH &&	 digitalRead( _dirDown ) == LOW && digitalRead( _dirLeft) == LOW )
+	    		{
+				if (_overgang == false)
+				{
+	    				_Odywoord = _wisselgroep ('M');
+					_overgang = true; 
+					_aantalTekens = _aantalTekens - 1;
+				}
+	    		}
+	    		else if ( digitalRead( _dirUp ) == HIGH && digitalRead( _dirRight ) == LOW &&	 digitalRead( _dirDown ) == LOW && digitalRead( _dirLeft) == HIGH)
+	    		{
+				if (_overgang == false)
+				{
+	    				_Odywoord = _wisselgroep ('F');
+					_overgang = true; 
+					_aantalTekens = _aantalTekens - 1;
+				}
+	    		}
+	    		else if ( digitalRead( _dirUp ) == HIGH && digitalRead( _dirRight ) == HIGH &&	 digitalRead( _dirDown ) == HIGH && digitalRead( _dirLeft) == HIGH)
+	    		{
+	    			if (_overgang == true)
+	    			{
+					_neutraal();
+	    			}
+	       		}
+		}
+		else	 // If the first group is not false, then we are already looking for the second letter,
+	 	{
+	       		if ( digitalRead( _dirUp ) == LOW && digitalRead( _dirRight ) == HIGH &&	 digitalRead( _dirDown ) == HIGH && digitalRead( _dirLeft) == HIGH)
+		       	{
+				if (_overgang == false)
+				{
+	    				_Odywoord = _wisselgroep ('O');
+					_overgang = true; 
+					_aantalTekens = _aantalTekens - 1;
+				}
+		       	}
+		       	else if ( digitalRead( _dirUp ) == HIGH && digitalRead( _dirRight ) == HIGH &&	 digitalRead( _dirDown ) == HIGH && digitalRead( _dirLeft) == LOW)
+		       	{
+				if (_overgang == false)
+				{
+	    				_Odywoord = _wisselgroep ('E');
+					_overgang = true; 
+					_aantalTekens = _aantalTekens - 1;
+				}
+			}
+		       else if ( digitalRead( _dirUp ) == HIGH && digitalRead( _dirRight ) == HIGH &&	 digitalRead( _dirDown ) == LOW && digitalRead( _dirLeft) == HIGH)
+		       {
+				if (_overgang == false)
+				{
+	    				_Odywoord = _wisselgroep ('I');
+					_overgang = true; 
+					_aantalTekens = _aantalTekens - 1;
+				}
+		       }
+		       else if ( digitalRead( _dirUp ) == HIGH && digitalRead( _dirRight ) == LOW &&	 digitalRead( _dirDown ) == HIGH&& digitalRead( _dirLeft) == HIGH)
+		       {
+				if (_overgang == false)
+				{
+	    				_Odywoord = _wisselgroep ('A');
+					_overgang = true; 
+					_aantalTekens = _aantalTekens - 1;
+				}
+		       }
+		       else if ( digitalRead( _dirUp ) == HIGH && digitalRead( _dirRight ) == HIGH &&	 digitalRead( _dirDown ) == HIGH && digitalRead( _dirLeft) == HIGH)
+		       {
+		       		if (_overgang == true)
+		       		{
+					_neutraal();
+			       	}
+	       		}
+		}
+	}
+	Odywoord = _Odywoord;
+	return _Odywoord;
+}
+String OdyLed::_wisselgroep(char _Odyteken) 
+{
+	delay (holdtime);
+	Odytekens = Odytekens + _Odyteken; 
+	return Odytekens;
+}
+void OdyLed::_neutraal() 
+{
+	delay (bedenktijd);
+	_overgang = false;
+	if (firstLetterDefined == true)
+	{
+		firstLetterDefined = false;
+	}
+	else
+	{
+		firstLetterDefined = true;
+	}
+}
+//---------------------------------------------------------------------------
+/*
+//---------------------------------------------------------------------------
+
+void OdyLed::LoadBar()
+{ 
+  
+  
+  This part gets called in the earlier loop when a value is selected.
+  It only becomes part of the executed code if it gets called in the central loop.
+  This function confirms the selection and makes it final
+  a chosen selection becomed final (and part of the odyword) when the selection is held for the time set in the variable "holdtime"
+  
+	startholdtime = millis();//startholdtime is set to 0
+  	endholdtime = startholdtime;//endholdtime is set to 0
+  	delay(pausetime);
+  
+  	while (count <= 20 && (endholdtime - startholdtime) < holdtime && Odyteken == OdytekenNOW) 
+	{ // hier moet nog iets bij waardoor start key combi gechecked wordt met de nieuwe status.
+    	endholdtime = millis(); // endholdtime is updated
+	Odytekencheck(); // This checks if the odyteken does not change because that would mean it will not be confirmed as a chosen 'teken'
+    	delay (holdtime/12);
+    		while (count<20)
+		{  // This while sub-loop is currently not in use. It is only placed here as a placeholder to
+      			leds[count-14] = CRGB(50,0,0); // this switches LED7 light on (light 8 -the eigth light- on the strip)
+     			FastLED.show();
+     			break;
+      		}
+    		while (count==20)
+		{ // dit toevoegen als conditie hoor is
+			Odywoord = Odywoord + Odyteken; // the character related with the chosen direction is added to the word. When looking for first letter, Odyteken will be "" and one letter is added to Odywoord
+			break;
+      		}
+   		count++;  
+  	} // this bracket ends the bigger "while loop"
+} // This bracked ends the function
+//---------------------------------------------------------------------------
+
+
+
+void Odytekencheck()
+{
+	if ( digitalRead( dirUp ) == LOW && digitalRead( dirLeft ) == LOW )
+	{
+      		OdytekenNOW = 'R';
+       		exit;
+      	}
+      
+    	else if ( digitalRead( dirUp ) == LOW && digitalRead( dirRight ) == LOW )
+	{
+      		OdytekenNOW = 'D';
+        	exit;
+      	}   
+          
+    	else if ( digitalRead( dirDown ) == LOW && digitalRead( dirRight ) == LOW )
+	{
+      		OdytekenNOW = 'F';
+        	exit;
+      	}
+      
+    	else if ( digitalRead( dirDown ) == LOW && digitalRead( dirLeft ) == LOW )
+	{
+      		OdytekenNOW = 'M';
+        	exit;
+      	}
+  
+    	else if ( digitalRead( dirUp ) == LOW )
+	{
+      		OdytekenNOW = 'O';
+        	exit;
+      	}
+    
+    	else if ( digitalRead( dirRight ) == LOW ) 
+	{
+      		OdytekenNOW = 'A';
+        	exit;
+      	}
+   
+    	else if ( digitalRead( dirDown ) == LOW )
+	{
+      		OdytekenNOW = 'I';
+        	exit;
+      	}
+      
+    	else if( digitalRead( dirLeft ) == LOW )
+	{
+      		OdytekenNOW = 'E';
+        	exit;
+      	}
+      
+    	else 
+	{ // als er niets geselecteerd is
+      		OdytekenNOW = ' ';
+       		exit;
+      	}
+      
+}
+
+//---------------------------------------------------------------------------
+
+void LampjesRood()
+{ 
+	for(int i = 0; i < NUM_LEDS; i++ )
+   	{
+   		leds[i].setRGB(255,0,255);  // Set Color HERE!!!
+   	leds[i].fadeLightBy(brightness);
+  	}
+  	FastLED.show();
+  	brightness = brightness + fadeAmount;
+  // reverse the direction of the fading at the ends of the fade: 
+  	if(brightness == 0 || brightness == 255)
+  	{
+    		fadeAmount = -fadeAmount ; 
+  	}    
+  	delay(9);  // This delay sets speed of the fade. I usually do from 5-75 but you can always go higher.
+}*/

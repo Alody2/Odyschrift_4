@@ -1,0 +1,22 @@
+#include "OdyInput.h"
+OdyInput odyinput(	47,49,53,51 //contacten van de joystick
+		);
+String _Odywoord;
+//---------------------------------------------------------------------------
+
+void setup()
+{
+  	Serial.begin(9600);     //turning on of the serial monitor to inspect the result.
+	odyinput.holdtime = 50;
+}
+//---------------------------------------------------------------------------
+ 
+void loop()
+{
+_Odywoord = "";
+	_Odywoord = odyinput.selectieJoystickDigitaal(2);
+Serial.println (_Odywoord);
+}
+
+//---------------------------------------------------------------------------
+
